@@ -96,7 +96,7 @@ Agri-Medic successfully delivers a **digital farming assistance platform** that:
 ---
 
 ## 📄 License
-This project is licensed under the MIT License.
+This project is licensed under the MET License.
 
 ---
 
