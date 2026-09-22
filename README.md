@@ -1,5 +1,8 @@
 # 🌾 Agri-Medic: Smart Assistance for Sustainable Farming
 
+> **🎓 C-DAC Project** | Centre for Development of Advanced Computing  
+> Agri-Medic is a smart farming assistance platform developed as a **C-DAC project**, designed to bridge the gap between farmers, agricultural experts, and pesticide shop owners.
+
 Agri-Medic is a web-based smart farming assistance platform designed to help farmers identify and resolve crop-related issues by connecting them with agricultural experts and nearby pesticide shop owners. The system promotes sustainable farming by enabling timely expert guidance and access to the right agricultural products.
 
 ---
@@ -91,7 +94,7 @@ Agri-Medic successfully delivers a **digital farming assistance platform** that:
 ---
 
 ## 🤝 Contributors
-- **Abhishek Jadhav** – Full Stack Developer  
+- **Abhishek Jadhav** – Full Stack Developer (C-DAC)  
 
 ---
 
