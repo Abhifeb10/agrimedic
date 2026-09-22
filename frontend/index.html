@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Agri-Medic - Smart Farming Testing Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #10b981;
+      --primary-dark: #059669;
+      --primary-light: #ecfdf5;
+      --secondary: #0284c7;
+      --accent: #f59e0b;
+      --danger: #ef4444;
+      --bg: #0f172a;
+      --surface: #1e293b;
+      --surface-light: #334155;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --border: #334155;
+      --radius: 12px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      background: rgba(30, 41, 59, 0.8);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: #34d399;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.25rem 0.65rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    .badge-green { background: #064e3b; color: #6ee7b7; border: 1px solid #059669; }
+    .badge-red { background: #7f1d1d; color: #fca5a5; border: 1px solid #b91c1c; }
+    .badge-blue { background: #0c4a6e; color: #7dd3fc; border: 1px solid #0284c7; }
+    .badge-amber { background: #78350f; color: #fde68a; border: 1px solid #d97706; }
+
+    .pulse {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: currentColor;
+      box-shadow: 0 0 8px currentColor;
+    }
+
+    .main-container {
+      max-width: 1280px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+      flex: 1;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.25rem;
+    }
+
+    .card-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-bottom: 0.75rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    /* Quick Login Grid */
+    .role-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 0.75rem;
+      margin-top: 0.75rem;
+    }
+
+    .role-btn {
+      background: var(--surface-light);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 0.85rem;
+      border-radius: 8px;
+      cursor: pointer;
+      text-align: left;
+      transition: all 0.2s ease;
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+    .role-btn:hover {
+      background: #475569;
+      border-color: var(--primary);
+      transform: translateY(-2px);
+    }
+    .role-btn .name { font-weight: 700; font-size: 0.95rem; color: #38bdf8; }
+    .role-btn .email { font-size: 0.8rem; color: var(--text-muted); }
+
+    /* Session Bar */
+    .session-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+      background: #0f172a;
+      border: 1px dashed var(--border);
+      padding: 0.85rem 1.25rem;
+      border-radius: 8px;
+    }
+
+    .session-info {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-size: 0.9rem;
+    }
+
+    /* Tabs */
+    .tabs {
+      display: flex;
+      gap: 0.5rem;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 0.5rem;
+    }
+
+    .tab-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      padding: 0.65rem 1.25rem;
+      font-weight: 600;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.95rem;
+      transition: all 0.2s;
+    }
+    .tab-btn:hover { color: var(--text); background: var(--surface); }
+    .tab-btn.active {
+      color: #34d399;
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    /* Forms & Inputs */
+    .form-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 0.75rem;
+      margin-bottom: 0.75rem;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0.65rem 0.85rem;
+      color: var(--text);
+      font-family: inherit;
+      font-size: 0.9rem;
+    }
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+
+    button.btn-primary {
+      background: var(--primary);
+      color: #064e3b;
+      font-weight: 700;
+      border: none;
+      padding: 0.65rem 1.25rem;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    button.btn-primary:hover { background: #34d399; }
+
+    button.btn-danger {
+      background: rgba(239, 68, 68, 0.2);
+      color: #fca5a5;
+      border: 1px solid #ef4444;
+      padding: 0.4rem 0.85rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+    button.btn-danger:hover { background: #ef4444; color: white; }
+
+    /* Cards Grid */
+    .grid-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .item-card {
+      background: var(--surface-light);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    .item-title { font-weight: 700; font-size: 1.05rem; }
+    .item-sub { color: var(--text-muted); font-size: 0.85rem; }
+    .item-price { font-size: 1.25rem; font-weight: 800; color: #34d399; }
+
+    /* Console Logger */
+    .console-card {
+      background: #090d16;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.85rem;
+      font-family: monospace;
+      font-size: 0.82rem;
+      max-height: 250px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      color: #93c5fd;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="brand">
+      🌾 Agri-Medic Tester
+      <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 500;">v0.0.1</span>
+    </div>
+    <div style="display: flex; align-items: center; gap: 1rem;">
+      <a href="login.html" style="color: #6ee7b7; text-decoration: none; font-size: 0.85rem; font-weight: 700; background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3); padding: 0.4rem 0.8rem; border-radius: 6px;">🔐 Login & User Logs</a>
+      <div id="backend-status" class="badge badge-amber">
+        <div class="pulse"></div> Checking Backend...
+      </div>
+    </div>
+  </header>
+
+  <div class="main-container">
+
+    <!-- Quick Role Login Card -->
+    <div class="card">
+      <div class="card-title">
+        <span>⚡ Quick Role Switcher (1-Click Login)</span>
+        <span id="role-badge" class="badge badge-amber">Logged Out</span>
+      </div>
+      <p style="font-size: 0.85rem; color: var(--text-muted);">
+        Click any role below to authenticate instantly with pre-seeded credentials:
+      </p>
+      <div class="role-grid">
+        <button class="role-btn" onclick="loginPreset('admin@example.com', 'admin123', 'ROLE_ADMIN')">
+          <span class="name">👑 Administrator</span>
+          <span class="email">admin@example.com</span>
+        </button>
+        <button class="role-btn" onclick="loginPreset('patel@example.com', 'expert123', 'ROLE_EXPERT')">
+          <span class="name">🧑‍🔬 Agri Expert (Dr. Patel)</span>
+          <span class="email">patel@example.com</span>
+        </button>
+        <button class="role-btn" onclick="loginPreset('mahesh@example.com', 'shop123', 'ROLE_SHOPOWNER')">
+          <span class="name">🏪 Shop Owner (Mahesh)</span>
+          <span class="email">mahesh@example.com</span>
+        </button>
+        <button class="role-btn" onclick="loginPreset('ramesh@example.com', 'pass123', 'ROLE_FARMER')">
+          <span class="name">👨‍🌾 Farmer (Ramesh)</span>
+          <span class="email">ramesh@example.com</span>
+        </button>
+      </div>
+
+      <!-- Active Session Display -->
+      <div class="session-bar" style="margin-top: 1rem;">
+        <div class="session-info">
+          <span>Active Token:</span>
+          <code id="token-preview" style="color: #6ee7b7; font-size: 0.8rem;">None (Please login)</code>
+        </div>
+        <button class="btn-danger" onclick="logout()">Logout</button>
+      </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab('fertilizers-tab', this)">🌱 Fertilizers Catalog</button>
+      <button class="tab-btn" onclick="switchTab('issues-tab', this)">🐛 Crop Issues</button>
+      <button class="tab-btn" onclick="switchTab('orders-tab', this)">📦 Orders</button>
+      <button class="tab-btn" onclick="switchTab('custom-tab', this)">🔑 Custom Login / Register</button>
+    </div>
+
+    <!-- Tab 1: Fertilizers -->
+    <div id="fertilizers-tab" class="tab-content active">
+      <div class="card">
+        <div class="card-title">
+          <span>Available Fertilizers & Products</span>
+          <button class="btn-primary" onclick="loadFertilizers()">Refresh List</button>
+        </div>
+        <div id="fertilizer-list" class="grid-cards">
+          <div style="color: var(--text-muted); font-size: 0.9rem;">Click "Refresh List" to load products...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab 2: Issues -->
+    <div id="issues-tab" class="tab-content">
+      <div class="card" style="margin-bottom: 1rem;">
+        <div class="card-title">🌾 Report a Crop Issue (Farmer)</div>
+        <div class="form-row">
+          <input type="text" id="issue-title" placeholder="Issue Title (e.g. Leaf Spots)">
+          <input type="text" id="issue-desc" placeholder="Problem Description">
+          <input type="text" id="issue-img" placeholder="Image URL (e.g. /images/leaf.jpg)">
+          <button class="btn-primary" onclick="createIssue()">Submit Issue</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">
+          <span>Reported Crop Issues</span>
+          <button class="btn-primary" onclick="loadIssues()">Refresh Issues</button>
+        </div>
+        <div id="issues-list" class="grid-cards">
+          <div style="color: var(--text-muted); font-size: 0.9rem;">Click "Refresh Issues" to load issues...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab 3: Orders -->
+    <div id="orders-tab" class="tab-content">
+      <div class="card" style="margin-bottom: 1rem;">
+        <div class="card-title">🛒 Place a Fertilizer Order</div>
+        <div class="form-row">
+          <input type="number" id="order-farmer-id" placeholder="Farmer ID (e.g. 1)">
+          <input type="number" id="order-fert-id" placeholder="Fertilizer ID (e.g. 1)">
+          <input type="number" id="order-qty" placeholder="Quantity (e.g. 5)">
+          <button class="btn-primary" onclick="placeOrder()">Place Order</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">
+          <span>Orders History</span>
+          <button class="btn-primary" onclick="loadOrders()">Refresh Orders</button>
+        </div>
+        <div id="orders-list" class="grid-cards">
+          <div style="color: var(--text-muted); font-size: 0.9rem;">Click "Refresh Orders" to load orders...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab 4: Custom Auth -->
+    <div id="custom-tab" class="tab-content">
+      <div class="card">
+        <div class="card-title">Custom User Login</div>
+        <div class="form-row">
+          <input type="email" id="custom-email" placeholder="Email Address">
+          <input type="password" id="custom-pass" placeholder="Password">
+          <button class="btn-primary" onclick="loginCustom()">Login</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Console / API Log Card -->
+    <div class="card">
+      <div class="card-title" style="font-size: 0.95rem;">
+        <span>📡 Live API Inspector</span>
+        <button style="background: none; border: none; color: var(--text-muted); cursor: pointer;" onclick="clearConsole()">Clear</button>
+      </div>
+      <div id="api-console" class="console-card">Waiting for user actions...</div>
+    </div>
+
+  </div>
+
+  <script>
+    const API_BASE = "http://localhost:8080/api";
+    let currentToken = localStorage.getItem("jwt_token") || null;
+    let currentRole = localStorage.getItem("user_role") || null;
+    let currentUserEmail = localStorage.getItem("user_email") || null;
+
+    // Check backend health on startup
+    async function checkHealth() {
+      const el = document.getElementById("backend-status");
+      try {
+        const res = await fetch("http://localhost:8080/api/health");
+        if (res.ok) {
+          el.className = "badge badge-green";
+          el.innerHTML = '<div class="pulse"></div> Backend Connected (Port 8080)';
+        } else {
+          el.className = "badge badge-red";
+          el.innerHTML = '<div class="pulse"></div> Backend Responded ' + res.status;
+        }
+      } catch (err) {
+        el.className = "badge badge-red";
+        el.innerHTML = '<div class="pulse"></div> Backend Offline (Check Port 8080)';
+      }
+    }
+
+    function logApi(method, endpoint, status, data) {
+      const con = document.getElementById("api-console");
+      const time = new Date().toLocaleTimeString();
+      const text = `[${time}] ${method} ${endpoint} -> Status: ${status}\n` + JSON.stringify(data, null, 2) + "\n----------------------------------------\n";
+      con.innerHTML = text + con.innerHTML;
+    }
+
+    function clearConsole() {
+      document.getElementById("api-console").innerHTML = "Console cleared.";
+    }
+
+    function updateSessionUI() {
+      const badge = document.getElementById("role-badge");
+      const preview = document.getElementById("token-preview");
+
+      if (currentToken) {
+        badge.className = "badge badge-green";
+        badge.innerText = `${currentRole || 'Authenticated'}: ${currentUserEmail || ''}`;
+        preview.innerText = currentToken.substring(0, 30) + "...";
+      } else {
+        badge.className = "badge badge-amber";
+        badge.innerText = "Logged Out";
+        preview.innerText = "None (Please login)";
+      }
+    }
+
+    async function loginPreset(email, password, role) {
+      try {
+        const res = await fetch(`${API_BASE}/auth/login`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password })
+        });
+        const data = await res.json();
+        logApi("POST", "/api/auth/login", res.status, data);
+
+        if (res.ok && data.token) {
+          currentToken = data.token;
+          currentRole = role;
+          currentUserEmail = email;
+          localStorage.setItem("jwt_token", currentToken);
+          localStorage.setItem("user_role", currentRole);
+          localStorage.setItem("user_email", currentUserEmail);
+          updateSessionUI();
+          loadFertilizers();
+        } else {
+          alert("Login failed: " + JSON.stringify(data));
+        }
+      } catch (err) {
+        logApi("POST", "/api/auth/login", "ERROR", err.message);
+        alert("Failed to connect to backend: " + err.message);
+      }
+    }
+
+    async function loginCustom() {
+      const email = document.getElementById("custom-email").value;
+      const pass = document.getElementById("custom-pass").value;
+      if (!email || !pass) return alert("Enter email and password");
+      loginPreset(email, pass, "CUSTOM_ROLE");
+    }
+
+    function logout() {
+      currentToken = null;
+      currentRole = null;
+      currentUserEmail = null;
+      localStorage.clear();
+      updateSessionUI();
+      document.getElementById("fertilizer-list").innerHTML = '<div style="color: var(--text-muted);">Logged out.</div>';
+      document.getElementById("issues-list").innerHTML = '<div style="color: var(--text-muted);">Logged out.</div>';
+      document.getElementById("orders-list").innerHTML = '<div style="color: var(--text-muted);">Logged out.</div>';
+    }
+
+    function getAuthHeaders() {
+      return currentToken ? { "Authorization": `Bearer ${currentToken}`, "Content-Type": "application/json" } : { "Content-Type": "application/json" };
+    }
+
+    // Load Fertilizers
+    async function loadFertilizers() {
+      if (!currentToken) return alert("Please log in first using one of the Quick Role buttons!");
+      try {
+        const res = await fetch(`${API_BASE}/fertilizers`, { headers: getAuthHeaders() });
+        const data = await res.json();
+        logApi("GET", "/api/fertilizers", res.status, data);
+
+        const container = document.getElementById("fertilizer-list");
+        if (Array.isArray(data)) {
+          container.innerHTML = data.map(item => `
+            <div class="item-card">
+              <div class="item-title">${item.name}</div>
+              <div class="item-sub">Brand: <b>${item.brand || 'N/A'}</b> | Stock: <b>${item.stock} bags</b></div>
+              <div class="item-price">₹${item.price}</div>
+              <div style="margin-top: 0.5rem;">
+                <button class="btn-primary" style="font-size: 0.8rem; padding: 0.35rem 0.75rem;" onclick="quickOrder(${item.id})">Quick Order</button>
+              </div>
+            </div>
+          `).join("");
+        } else {
+          container.innerHTML = `<div style="color: var(--danger)">Failed to load fertilizers: ${JSON.stringify(data)}</div>`;
+        }
+      } catch (err) {
+        logApi("GET", "/api/fertilizers", "ERROR", err.message);
+      }
+    }
+
+    // Load Issues
+    async function loadIssues() {
+      if (!currentToken) return alert("Please log in first!");
+      try {
+        const res = await fetch(`${API_BASE}/issues`, { headers: getAuthHeaders() });
+        const data = await res.json();
+        logApi("GET", "/api/issues", res.status, data);
+
+        const container = document.getElementById("issues-list");
+        if (Array.isArray(data)) {
+          container.innerHTML = data.map(item => `
+            <div class="item-card">
+              <div class="item-title">#${item.id} - ${item.title}</div>
+              <div class="item-sub">${item.description}</div>
+              <div style="font-size: 0.8rem; color: #38bdf8;">Status: <b>${item.status || 'REPORTED'}</b></div>
+              ${item.diagnosis ? `<div style="font-size: 0.85rem; background: #0f172a; padding: 0.4rem; border-radius: 4px; color: #a7f3d0;"><b>Diagnosis:</b> ${item.diagnosis}</div>` : ''}
+              <div style="margin-top: 0.5rem;">
+                <button class="btn-primary" style="font-size: 0.8rem; padding: 0.3rem 0.65rem;" onclick="diagnoseModal(${item.id})">Diagnose / Reply</button>
+              </div>
+            </div>
+          `).join("");
+        }
+      } catch (err) {
+        logApi("GET", "/api/issues", "ERROR", err.message);
+      }
+    }
+
+    // Create Issue
+    async function createIssue() {
+      if (!currentToken) return alert("Please log in as Farmer first!");
+      const title = document.getElementById("issue-title").value;
+      const desc = document.getElementById("issue-desc").value;
+      const img = document.getElementById("issue-img").value || "/images/sample.jpg";
+      if (!title) return alert("Enter an issue title");
+
+      try {
+        const res = await fetch(`${API_BASE}/issues`, {
+          method: "POST",
+          headers: getAuthHeaders(),
+          body: JSON.stringify({ title, description: desc, imageUrl: img, farmerId: 1 })
+        });
+        const data = await res.json();
+        logApi("POST", "/api/issues", res.status, data);
+        alert("Issue submitted successfully!");
+        loadIssues();
+      } catch (err) {
+        logApi("POST", "/api/issues", "ERROR", err.message);
+      }
+    }
+
+    // Diagnose Issue
+    async function diagnoseModal(issueId) {
+      const diag = prompt("Enter Expert diagnosis & recommendation for Issue #" + issueId + ":");
+      if (!diag) return;
+      try {
+        const res = await fetch(`${API_BASE}/issues/${issueId}/diagnose`, {
+          method: "PUT",
+          headers: getAuthHeaders(),
+          body: JSON.stringify({ diagnosis: diag, expertId: 3 })
+        });
+        const data = await res.json();
+        logApi("PUT", `/api/issues/${issueId}/diagnose`, res.status, data);
+        alert("Diagnosis submitted!");
+        loadIssues();
+      } catch (err) {
+        logApi("PUT", `/api/issues/${issueId}/diagnose`, "ERROR", err.message);
+      }
+    }
+
+    // Quick Order
+    function quickOrder(fertId) {
+      document.getElementById("order-fert-id").value = fertId;
+      document.getElementById("order-farmer-id").value = 1;
+      document.getElementById("order-qty").value = 5;
+      switchTab('orders-tab', document.querySelectorAll('.tab-btn')[2]);
+    }
+
+    // Place Order
+    async function placeOrder() {
+      if (!currentToken) return alert("Please log in first!");
+      const farmerId = document.getElementById("order-farmer-id").value || 1;
+      const fertId = document.getElementById("order-fert-id").value;
+      const qty = document.getElementById("order-qty").value || 1;
+      if (!fertId) return alert("Specify fertilizer ID");
+
+      try {
+        const res = await fetch(`${API_BASE}/orders`, {
+          method: "POST",
+          headers: getAuthHeaders(),
+          body: JSON.stringify({ farmerId: parseInt(farmerId), fertilizerId: parseInt(fertId), quantity: parseInt(qty) })
+        });
+        const data = await res.json();
+        logApi("POST", "/api/orders", res.status, data);
+        alert("Order placed successfully!");
+        loadOrders();
+      } catch (err) {
+        logApi("POST", "/api/orders", "ERROR", err.message);
+      }
+    }
+
+    // Load Orders
+    async function loadOrders() {
+      if (!currentToken) return alert("Please log in first!");
+      try {
+        const res = await fetch(`${API_BASE}/orders`, { headers: getAuthHeaders() });
+        const data = await res.json();
+        logApi("GET", "/api/orders", res.status, data);
+
+        const container = document.getElementById("orders-list");
+        if (Array.isArray(data)) {
+          container.innerHTML = data.map(item => `
+            <div class="item-card">
+              <div class="item-title">Order #${item.id}</div>
+              <div class="item-sub">Farmer ID: ${item.farmerId} | Product ID: ${item.fertilizerId}</div>
+              <div style="font-weight: 700; color: #fbbf24;">Quantity: ${item.quantity} bags</div>
+              <div class="badge badge-blue" style="margin-top: 0.35rem; width: fit-content;">Status: ${item.status || 'PLACED'}</div>
+            </div>
+          `).join("");
+        }
+      } catch (err) {
+        logApi("GET", "/api/orders", "ERROR", err.message);
+      }
+    }
+
+    function switchTab(tabId, btn) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+      document.getElementById(tabId).classList.add('active');
+      btn.classList.add('active');
+    }
+
+    // Initialize
+    updateSessionUI();
+    checkHealth();
+    setInterval(checkHealth, 10000);
+  </script>
+</body>
+</html>

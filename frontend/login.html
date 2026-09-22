@@ -1,0 +1,892 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Agri-Medic - Authentication & User Logs</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #10b981;
+      --primary-dark: #059669;
+      --primary-hover: #34d399;
+      --secondary: #0284c7;
+      --accent: #f59e0b;
+      --danger: #ef4444;
+      --bg: #0b1120;
+      --surface: #1e293b;
+      --surface-light: #283548;
+      --surface-card: rgba(30, 41, 59, 0.7);
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --border: rgba(148, 163, 184, 0.15);
+      --radius: 14px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: radial-gradient(circle at 10% 20%, rgba(16, 185, 129, 0.08) 0%, transparent 40%),
+                  radial-gradient(circle at 90% 80%, rgba(2, 132, 199, 0.08) 0%, transparent 40%),
+                  var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: #34d399;
+      text-decoration: none;
+    }
+
+    .header-nav {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .nav-link {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 600;
+      padding: 0.5rem 0.85rem;
+      border-radius: 8px;
+      transition: all 0.2s;
+    }
+    .nav-link:hover {
+      color: var(--text);
+      background: var(--surface);
+    }
+    .nav-link.btn-cta {
+      background: rgba(16, 185, 129, 0.15);
+      color: #6ee7b7;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+    .nav-link.btn-cta:hover {
+      background: var(--primary);
+      color: #064e3b;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.3rem 0.75rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    .badge-green { background: rgba(16, 185, 129, 0.15); color: #6ee7b7; border: 1px solid rgba(16, 185, 129, 0.3); }
+    .badge-red { background: rgba(239, 68, 68, 0.15); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.3); }
+    .badge-amber { background: rgba(245, 158, 11, 0.15); color: #fde68a; border: 1px solid rgba(245, 158, 11, 0.3); }
+    .badge-blue { background: rgba(2, 132, 199, 0.15); color: #7dd3fc; border: 1px solid rgba(2, 132, 199, 0.3); }
+
+    .pulse {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: currentColor;
+      box-shadow: 0 0 8px currentColor;
+    }
+
+    .main-layout {
+      max-width: 1380px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 2rem 1.5rem;
+      display: grid;
+      grid-template-columns: 460px 1fr;
+      gap: 2rem;
+      flex: 1;
+    }
+
+    @media (max-width: 992px) {
+      .main-layout {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .card {
+      background: var(--surface-card);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.75rem;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+    }
+
+    .card-header {
+      margin-bottom: 1.5rem;
+    }
+
+    .card-title {
+      font-size: 1.35rem;
+      font-weight: 800;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .card-desc {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-top: 0.35rem;
+    }
+
+    /* Tabs */
+    .tab-switcher {
+      display: flex;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 0.3rem;
+      margin-bottom: 1.5rem;
+      gap: 0.25rem;
+    }
+
+    .tab-btn {
+      flex: 1;
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      padding: 0.6rem;
+      font-weight: 700;
+      font-size: 0.9rem;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .tab-btn.active {
+      background: var(--surface-light);
+      color: #34d399;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Forms */
+    .form-group {
+      margin-bottom: 1.15rem;
+    }
+
+    label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #cbd5e1;
+      margin-bottom: 0.4rem;
+    }
+
+    .input-wrapper {
+      position: relative;
+    }
+
+    input, select {
+      width: 100%;
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.75rem 1rem;
+      color: var(--text);
+      font-family: inherit;
+      font-size: 0.9rem;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    input:focus, select:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
+    }
+
+    .password-toggle {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 0.8rem;
+    }
+
+    /* Quick Roles */
+    .quick-chips-title {
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      margin-bottom: 0.6rem;
+    }
+
+    .chips-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.5rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .chip-btn {
+      background: var(--surface-light);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 0.6rem 0.75rem;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.8rem;
+      text-align: left;
+      transition: all 0.2s;
+    }
+    .chip-btn:hover {
+      background: #334155;
+      border-color: var(--primary);
+      transform: translateY(-1px);
+    }
+    .chip-btn strong { display: block; color: #38bdf8; font-size: 0.82rem; }
+    .chip-btn span { color: var(--text-muted); font-size: 0.72rem; }
+
+    .btn-submit {
+      width: 100%;
+      background: var(--primary);
+      color: #064e3b;
+      font-weight: 800;
+      font-size: 1rem;
+      border: none;
+      padding: 0.85rem;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-top: 0.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+    .btn-submit:hover {
+      background: var(--primary-hover);
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+    }
+
+    /* Active Session Bar */
+    .active-session {
+      margin-top: 1.25rem;
+      padding: 1rem;
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px dashed var(--border);
+      border-radius: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    /* Logs Section */
+    .logs-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+    }
+
+    .logs-actions {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .btn-outline {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      padding: 0.45rem 0.85rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-outline:hover {
+      color: var(--text);
+      background: var(--surface);
+      border-color: #64748b;
+    }
+
+    .table-container {
+      background: rgba(11, 17, 32, 0.6);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow-x: auto;
+      max-height: 520px;
+      overflow-y: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+      text-align: left;
+    }
+
+    thead {
+      background: rgba(30, 41, 59, 0.8);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    th {
+      padding: 0.85rem 1rem;
+      color: #94a3b8;
+      font-weight: 700;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      border-bottom: 1px solid var(--border);
+    }
+
+    td {
+      padding: 0.85rem 1rem;
+      border-bottom: 1px solid rgba(148, 163, 184, 0.08);
+      color: #e2e8f0;
+    }
+
+    tr:hover td {
+      background: rgba(51, 65, 85, 0.3);
+    }
+
+    .status-pill {
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 0.2rem 0.55rem;
+      border-radius: 4px;
+    }
+    .status-pill.success { background: #064e3b; color: #6ee7b7; }
+    .status-pill.failed { background: #7f1d1d; color: #fca5a5; }
+
+    .token-snippet {
+      font-family: monospace;
+      font-size: 0.75rem;
+      color: #93c5fd;
+      background: rgba(15, 23, 42, 0.6);
+      padding: 0.2rem 0.4rem;
+      border-radius: 4px;
+      display: inline-block;
+      max-width: 140px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .empty-state {
+      padding: 3rem 1rem;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+
+    .alert {
+      padding: 0.75rem 1rem;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      margin-bottom: 1rem;
+      display: none;
+    }
+    .alert-success { background: rgba(16, 185, 129, 0.2); border: 1px solid #10b981; color: #6ee7b7; }
+    .alert-danger { background: rgba(239, 68, 68, 0.2); border: 1px solid #ef4444; color: #fca5a5; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <a href="index.html" class="brand">
+      🌾 Agri-Medic
+      <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 500;">Authentication & Audit</span>
+    </a>
+    <div class="header-nav">
+      <div id="backend-status" class="badge badge-amber">
+        <div class="pulse"></div> Connecting...
+      </div>
+      <a href="index.html" class="nav-link btn-cta">🚀 Open Full Dashboard</a>
+    </div>
+  </header>
+
+  <div class="main-layout">
+
+    <!-- Left Column: Authentication Form -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">User Authentication</div>
+        <div class="card-desc">Sign in with existing credentials or create a new account</div>
+      </div>
+
+      <!-- Tab Switcher -->
+      <div class="tab-switcher">
+        <button id="tab-login" class="tab-btn active" onclick="switchAuthTab('login')">Sign In</button>
+        <button id="tab-register" class="tab-btn" onclick="switchAuthTab('register')">Register</button>
+      </div>
+
+      <div id="alert-box" class="alert"></div>
+
+      <!-- Login Form -->
+      <div id="login-section">
+        <!-- Quick Roles -->
+        <div class="quick-chips-title">⚡ 1-Click Quick Fill</div>
+        <div class="chips-grid">
+          <button class="chip-btn" onclick="fillAndLogin('admin@example.com', 'admin123')">
+            <strong>👑 Admin</strong>
+            <span>admin@example.com</span>
+          </button>
+          <button class="chip-btn" onclick="fillAndLogin('patel@example.com', 'expert123')">
+            <strong>🧑‍🔬 Agri Expert</strong>
+            <span>patel@example.com</span>
+          </button>
+          <button class="chip-btn" onclick="fillAndLogin('mahesh@example.com', 'shop123')">
+            <strong>🏪 Shop Owner</strong>
+            <span>mahesh@example.com</span>
+          </button>
+          <button class="chip-btn" onclick="fillAndLogin('ramesh@example.com', 'pass123')">
+            <strong>👨‍🌾 Farmer</strong>
+            <span>ramesh@example.com</span>
+          </button>
+        </div>
+
+        <form id="form-login" onsubmit="handleLogin(event)">
+          <div class="form-group">
+            <label for="login-email">Email Address</label>
+            <input type="email" id="login-email" required placeholder="e.g. admin@example.com">
+          </div>
+
+          <div class="form-group">
+            <label for="login-pass">Password</label>
+            <div class="input-wrapper">
+              <input type="password" id="login-pass" required placeholder="Enter your password">
+              <button type="button" class="password-toggle" onclick="togglePass('login-pass', this)">Show</button>
+            </div>
+          </div>
+
+          <button type="submit" class="btn-submit" id="btn-login-submit">
+            <span>Sign In to Agri-Medic</span> &rarr;
+          </button>
+        </form>
+
+        <!-- Current Session State -->
+        <div class="active-session">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-size: 0.8rem; font-weight: 700; color: #94a3b8;">ACTIVE SESSION</span>
+            <span id="session-badge" class="badge badge-amber">Logged Out</span>
+          </div>
+          <div style="font-size: 0.82rem; color: #cbd5e1;" id="session-user">No active user authenticated.</div>
+          <div style="margin-top: 0.25rem;">
+            <button class="btn-outline" style="font-size: 0.75rem; padding: 0.25rem 0.5rem;" onclick="logoutSession()">Terminate Session</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Registration Form -->
+      <div id="register-section" style="display: none;">
+        <form id="form-register" onsubmit="handleRegister(event)">
+          <div class="form-group">
+            <label for="reg-name">Full Name</label>
+            <input type="text" id="reg-name" required placeholder="e.g. Vikas Patil">
+          </div>
+
+          <div class="form-group">
+            <label for="reg-email">Email Address</label>
+            <input type="email" id="reg-email" required placeholder="e.g. vikas@agrimedic.com">
+          </div>
+
+          <div class="form-group">
+            <label for="reg-phone">Phone Number</label>
+            <input type="text" id="reg-phone" placeholder="e.g. 9876543210">
+          </div>
+
+          <div class="form-group">
+            <label for="reg-role">Account Role</label>
+            <select id="reg-role" required>
+              <option value="ROLE_FARMER">Farmer (Upload crop issues & order products)</option>
+              <option value="ROLE_EXPERT">Agricultural Expert (Diagnose crop issues)</option>
+              <option value="ROLE_SHOPOWNER">Shop Owner (Manage inventory & supplies)</option>
+              <option value="ROLE_ADMIN">Administrator</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="reg-pass">Password</label>
+            <div class="input-wrapper">
+              <input type="password" id="reg-pass" required placeholder="Minimum 6 characters">
+              <button type="button" class="password-toggle" onclick="togglePass('reg-pass', this)">Show</button>
+            </div>
+          </div>
+
+          <button type="submit" class="btn-submit" id="btn-reg-submit">
+            <span>Create Account</span> &rarr;
+          </button>
+        </form>
+      </div>
+
+    </div>
+
+    <!-- Right Column: User Logs & Audit Trail -->
+    <div class="card" style="display: flex; flex-direction: column;">
+      <div class="logs-header">
+        <div>
+          <div class="card-title">📋 User Activity & Login Logs</div>
+          <div class="card-desc">Real-time audit records of authentication events, token grants, and session attempts</div>
+        </div>
+        <div class="logs-actions">
+          <button class="btn-outline" onclick="exportLogs()">📥 Export JSON</button>
+          <button class="btn-outline" onclick="clearLogs()" style="color: #fca5a5;">🗑️ Clear Logs</button>
+        </div>
+      </div>
+
+      <!-- Logs Table -->
+      <div class="table-container">
+        <table id="logs-table">
+          <thead>
+            <tr>
+              <th>Timestamp</th>
+              <th>Action</th>
+              <th>User / Email</th>
+              <th>Assigned Role</th>
+              <th>Status</th>
+              <th>JWT Token Preview</th>
+            </tr>
+          </thead>
+          <tbody id="logs-body">
+            <!-- Dynamic rows inserted here -->
+          </tbody>
+        </table>
+        <div id="logs-empty" class="empty-state" style="display: none;">
+          No activity recorded yet. Sign in or register to generate your first audit log!
+        </div>
+      </div>
+
+      <!-- Live Log Details Preview -->
+      <div style="margin-top: 1.25rem; font-size: 0.8rem; color: var(--text-muted); display: flex; justify-content: space-between; align-items: center;">
+        <span id="log-count">Total Records: 0</span>
+        <span>Storage: Local Client Persistence</span>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    const API_BASE = "http://localhost:8080/api";
+    const LOGS_STORAGE_KEY = "agrimedic_user_logs";
+
+    // Initialize
+    document.addEventListener("DOMContentLoaded", () => {
+      checkBackendHealth();
+      renderLogs();
+      updateSessionDisplay();
+      setInterval(checkBackendHealth, 10000);
+    });
+
+    // Check Backend Connectivity
+    async function checkBackendHealth() {
+      const el = document.getElementById("backend-status");
+      try {
+        const res = await fetch("http://localhost:8080/api/health");
+        if (res.ok) {
+          el.className = "badge badge-green";
+          el.innerHTML = '<div class="pulse"></div> Backend Online (Port 8080)';
+        } else {
+          el.className = "badge badge-amber";
+          el.innerHTML = '<div class="pulse"></div> Backend Status ' + res.status;
+        }
+      } catch (err) {
+        el.className = "badge badge-red";
+        el.innerHTML = '<div class="pulse"></div> Backend Offline';
+      }
+    }
+
+    // Tab Switching (Login / Register)
+    function switchAuthTab(tab) {
+      const isLogin = tab === 'login';
+      document.getElementById('tab-login').classList.toggle('active', isLogin);
+      document.getElementById('tab-register').classList.toggle('active', !isLogin);
+      document.getElementById('login-section').style.display = isLogin ? 'block' : 'none';
+      document.getElementById('register-section').style.display = isLogin ? 'none' : 'block';
+      hideAlert();
+    }
+
+    // Toggle Password Visibility
+    function togglePass(inputId, btn) {
+      const inp = document.getElementById(inputId);
+      if (inp.type === "password") {
+        inp.type = "text";
+        btn.innerText = "Hide";
+      } else {
+        inp.type = "password";
+        btn.innerText = "Show";
+      }
+    }
+
+    // Alerts
+    function showAlert(msg, type = "success") {
+      const box = document.getElementById("alert-box");
+      box.className = `alert alert-${type}`;
+      box.innerText = msg;
+      box.style.display = "block";
+    }
+    function hideAlert() {
+      document.getElementById("alert-box").style.display = "none";
+    }
+
+    // Quick Fill helper
+    function fillAndLogin(email, pass) {
+      document.getElementById("login-email").value = email;
+      document.getElementById("login-pass").value = pass;
+      document.getElementById("btn-login-submit").click();
+    }
+
+    // Decode JWT payload (without external libraries)
+    function parseJwt(token) {
+      try {
+        const base64Url = token.split('.')[1];
+        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+        const jsonPayload = decodeURIComponent(atob(base64).split('').map(c => {
+          return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+        }).join(''));
+        return JSON.parse(jsonPayload);
+      } catch (e) {
+        return null;
+      }
+    }
+
+    // Handle Login
+    async function handleLogin(e) {
+      e.preventDefault();
+      hideAlert();
+
+      const email = document.getElementById("login-email").value.trim();
+      const password = document.getElementById("login-pass").value;
+      const startTime = performance.now();
+
+      try {
+        const res = await fetch(`${API_BASE}/auth/login`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password })
+        });
+
+        const elapsed = Math.round(performance.now() - startTime);
+        let data = {};
+        try { data = await res.json(); } catch(err) {}
+
+        if (res.ok && data.token) {
+          const payload = parseJwt(data.token);
+          const role = payload?.role || "AUTHENTICATED";
+
+          // Save active session
+          localStorage.setItem("jwt_token", data.token);
+          localStorage.setItem("user_email", email);
+          localStorage.setItem("user_role", role);
+
+          // Add user log
+          addLogEntry({
+            action: "LOGIN",
+            email: email,
+            role: role,
+            status: "SUCCESS",
+            statusCode: res.status,
+            latencyMs: elapsed,
+            token: data.token
+          });
+
+          showAlert(`Successfully authenticated as ${email} (${role})!`, "success");
+          updateSessionDisplay();
+        } else {
+          // Failed attempt log
+          addLogEntry({
+            action: "LOGIN",
+            email: email,
+            role: "UNKNOWN",
+            status: "FAILED",
+            statusCode: res.status,
+            latencyMs: elapsed,
+            token: null
+          });
+
+          showAlert(`Authentication failed (${res.status}): ${data.message || 'Invalid email or password.'}`, "danger");
+        }
+      } catch (err) {
+        showAlert(`Connection error: ${err.message}. Is backend running?`, "danger");
+      }
+    }
+
+    // Handle Registration
+    async function handleRegister(e) {
+      e.preventDefault();
+      hideAlert();
+
+      const name = document.getElementById("reg-name").value.trim();
+      const email = document.getElementById("reg-email").value.trim();
+      const phone = document.getElementById("reg-phone").value.trim();
+      const role = document.getElementById("reg-role").value;
+      const password = document.getElementById("reg-pass").value;
+
+      try {
+        const res = await fetch(`${API_BASE}/auth/register`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name, email, phone, role, password })
+        });
+
+        if (res.ok) {
+          addLogEntry({
+            action: "REGISTER",
+            email: email,
+            role: role,
+            status: "SUCCESS",
+            statusCode: res.status,
+            latencyMs: 0,
+            token: null
+          });
+
+          showAlert(`Account for ${name} registered! You can now log in.`, "success");
+          switchAuthTab('login');
+          document.getElementById("login-email").value = email;
+          document.getElementById("login-pass").value = password;
+        } else {
+          const text = await res.text();
+          showAlert(`Registration failed (${res.status}): ${text}`, "danger");
+        }
+      } catch (err) {
+        showAlert(`Registration connection error: ${err.message}`, "danger");
+      }
+    }
+
+    // Session Management
+    function updateSessionDisplay() {
+      const token = localStorage.getItem("jwt_token");
+      const email = localStorage.getItem("user_email");
+      const role = localStorage.getItem("user_role");
+      const badge = document.getElementById("session-badge");
+      const userText = document.getElementById("session-user");
+
+      if (token && email) {
+        badge.className = "badge badge-green";
+        badge.innerText = role || "Logged In";
+        userText.innerHTML = `Active: <b>${email}</b><br><span style="font-size:0.75rem; color:#6ee7b7;">Session token valid</span>`;
+      } else {
+        badge.className = "badge badge-amber";
+        badge.innerText = "Logged Out";
+        userText.innerText = "No active user authenticated.";
+      }
+    }
+
+    function logoutSession() {
+      const email = localStorage.getItem("user_email");
+      if (email) {
+        addLogEntry({
+          action: "LOGOUT",
+          email: email,
+          role: localStorage.getItem("user_role") || "N/A",
+          status: "SUCCESS",
+          statusCode: 200,
+          latencyMs: 0,
+          token: null
+        });
+      }
+      localStorage.removeItem("jwt_token");
+      localStorage.removeItem("user_email");
+      localStorage.removeItem("user_role");
+      updateSessionDisplay();
+      showAlert("You have logged out successfully.", "success");
+    }
+
+    // Logs System
+    function getLogs() {
+      try {
+        return JSON.parse(localStorage.getItem(LOGS_STORAGE_KEY)) || [];
+      } catch (e) {
+        return [];
+      }
+    }
+
+    function addLogEntry(entry) {
+      const logs = getLogs();
+      entry.id = Date.now();
+      entry.timestamp = new Date().toLocaleString();
+      logs.unshift(entry); // latest on top
+      if (logs.length > 50) logs.pop(); // keep top 50
+      localStorage.setItem(LOGS_STORAGE_KEY, JSON.stringify(logs));
+      renderLogs();
+    }
+
+    function renderLogs() {
+      const logs = getLogs();
+      const tbody = document.getElementById("logs-body");
+      const empty = document.getElementById("logs-empty");
+      const count = document.getElementById("log-count");
+
+      count.innerText = `Total Records: ${logs.length}`;
+
+      if (logs.length === 0) {
+        tbody.innerHTML = "";
+        empty.style.display = "block";
+        return;
+      }
+
+      empty.style.display = "none";
+      tbody.innerHTML = logs.map(l => `
+        <tr>
+          <td style="white-space: nowrap; font-size: 0.8rem; color: #94a3b8;">${l.timestamp}</td>
+          <td><b>${l.action}</b></td>
+          <td>${l.email || 'N/A'}</td>
+          <td><span class="badge ${l.role === 'ROLE_ADMIN' ? 'badge-amber' : l.role === 'ROLE_EXPERT' ? 'badge-blue' : 'badge-green'}">${l.role}</span></td>
+          <td>
+            <span class="status-pill ${l.status === 'SUCCESS' ? 'success' : 'failed'}">
+              ${l.status} (${l.statusCode})
+            </span>
+          </td>
+          <td>
+            ${l.token ? `<span class="token-snippet" title="${l.token}">${l.token}</span>` : '<span style="color:#64748b; font-size:0.75rem;">None</span>'}
+          </td>
+        </tr>
+      `).join("");
+    }
+
+    function clearLogs() {
+      if (confirm("Clear all local user activity logs?")) {
+        localStorage.removeItem(LOGS_STORAGE_KEY);
+        renderLogs();
+      }
+    }
+
+    function exportLogs() {
+      const logs = getLogs();
+      const blob = new Blob([JSON.stringify(logs, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `agrimedic-user-logs-${Date.now()}.json`;
+      a.click();
+    }
+  </script>
+</body>
+</html>
