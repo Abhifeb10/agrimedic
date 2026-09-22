@@ -91,7 +91,7 @@ Agri-Medic successfully delivers a **digital farming assistance platform** that:
 ---
 
 ## 🤝 Contributors
-- **Kunal Kapadi** – Full Stack Developer  
+- **Abhishek Jadhav** – Full Stack Developer  
 
 ---
 
